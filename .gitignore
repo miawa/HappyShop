@@ -38,10 +38,18 @@ build/
 .DS_Store
 
 
-derby.log
-happyShopDB/db.lck
-happyShopDB/log/
-happyShopDB/seg0/
+
 
 .idea/
+
+
 happyShopDB/users.json
+happyShopDB/orders.json
+happyShopDB/log/
+happyShopDB/seg0/
+happyShopDB/db.lck
+happyShopDB/*.lck
+derby.log
+
+
+orders/

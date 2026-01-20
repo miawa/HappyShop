@@ -171,6 +171,36 @@ public class CustomerModel {
         return sb.toString();
     }
 
+    private void mergeAndSortTrolley() {
+    Map<String, Product> grouped = new HashMap<>();
+
+    for (Product p : trolley) {
+        String id = p.getProductId();
+
+        if (grouped.containsKey(id)) {
+            Product existing = grouped.get(id);
+            existing.setOrderedQuantity(existing.getOrderedQuantity() + p.getOrderedQuantity());
+        } else {
+            // copy so we don’t accidentally mutate shared Product objects
+            Product copy = new Product(
+                    p.getProductId(),
+                    p.getProductDescription(),
+                    p.getProductImageName(),
+                    p.getUnitPrice(),
+                    p.getStockQuantity()
+            );
+            copy.setOrderedQuantity(p.getOrderedQuantity());
+            grouped.put(id, copy);
+        }
+    }
+
+    trolley.clear();
+    trolley.addAll(grouped.values());
+
+    trolley.sort((a, b) -> a.getProductId().compareTo(b.getProductId()));
+}
+
+
 
     /**
      * Groups products by their productId to optimize database queries and updates.
