@@ -1,9 +1,11 @@
 package ci553.happyshop.client.customer;
 
+import ci553.happyshop.client.AccountManager;
 import ci553.happyshop.storageAccess.DatabaseRW;
 import ci553.happyshop.storageAccess.DatabaseRWFactory;
 import javafx.application.Application;
 import javafx.stage.Stage;
+
 
 /**
  * A standalone Customer Client that can be run independently without launching the full system.
@@ -24,6 +26,20 @@ public class CustomerClient extends Application {
      * Also creates the RemoveProductNotifier, which tracks the position of the Customer View
      * and is triggered by the Customer Model when needed.
      */
+    
+
+   
+
+    //private String loggedInUserId;
+    //private String loggedInUserName;
+
+
+
+    //public void setLoggedInUser(String userId, String userName) {
+    //    this.loggedInUserId = userId;
+    //    this.loggedInUserName = userName;
+    //}
+
     @Override
     public void start(Stage window) {
         CustomerView cusView = new CustomerView();
@@ -31,14 +47,20 @@ public class CustomerClient extends Application {
         CustomerModel cusModel = new CustomerModel();
         DatabaseRW databaseRW = DatabaseRWFactory.createDatabaseRW();
 
+        
+        AccountManager mgr = AccountManager.getInstance();
+        String uid = mgr.getCurrentUserId();
+        String name = (uid == null) ? null : mgr.getNameFor(uid);
+        cusView.setLoginStatus(uid, name);
+
+
         cusView.cusController = cusController;
         cusController.cusModel = cusModel;
         cusModel.cusView = cusView;
         cusModel.databaseRW = databaseRW;
-        cusView.start(window);
 
-        //RemoveProductNotifier removeProductNotifier = new RemoveProductNotifier();
-        //removeProductNotifier.cusView = cusView;
-        //cusModel.removeProductNotifier = removeProductNotifier;
+        cusView.start(window);
     }
 }
+
+

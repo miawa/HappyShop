@@ -13,12 +13,15 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import ci553.happyshop.client.AccountManager;
+import ci553.happyshop.utility.UIStyle;
 
 /**
  * Simple JavaFX login UI where a user can enter userID and password.
  * Includes a "Create Account" option that shows a small account creation dialog.
  * This class only provides the UI and basic callbacks; authentication persistence
  * and wiring into the rest of the application will be implemented in later steps.
+ * 
+ * User can "Create Account" or "Login" with existing login information; or may Skip Login. 
  */
 public class LoginView {
 
@@ -49,8 +52,15 @@ public class LoginView {
         grid.add(pf, 1, 1);
         grid.add(hbButtons, 1, 2);
 
-        Scene scene = new Scene(grid, 360, 200);
+        Scene scene = new Scene(grid);
         stage.setScene(scene);
+        grid.applyCss();
+        grid.layout();
+        stage.sizeToScene();
+        grid.setStyle(UIStyle.rootStyleBlue);
+        
+        stage.centerOnScreen();
+
         stage.show();
 
         btnLogin.setOnAction(e -> {
@@ -58,6 +68,7 @@ public class LoginView {
             String pass = pf.getText();
             AccountManager mgr = AccountManager.getInstance();
             if (mgr.authenticate(user, pass)) {
+                mgr.setCurrentUser(user);
                 if (onSuccess != null) onSuccess.run();
                 stage.close();
             } else {
@@ -71,11 +82,11 @@ public class LoginView {
         btnCreate.setOnAction(e -> showCreateAccountDialog(stage));
 
         btnSkip.setOnAction(e -> {
-            if (onSuccess != null) {
-                onSuccess.run();
-            }
+            AccountManager.getInstance().clearCurrentUser();
+            if (onSuccess != null) onSuccess.run();
             stage.close();
         });
+
     }
 
     /**

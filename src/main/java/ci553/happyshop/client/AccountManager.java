@@ -21,17 +21,43 @@ public class AccountManager {
 
     private final Map<String, UserRecord> accounts = new ConcurrentHashMap<>(); // userId -> record
 
-    private static final AccountManager INSTANCE = new AccountManager();
+    
 
-    private static final Path USERS_FILE = Paths.get("happyShopDB", "users.json");
+    private static final Path USERS_FILE = Paths.get("happyShopDB", "users.json").toAbsolutePath();
+    static {
+    System.out.println("user.dir = " + System.getProperty("user.dir"));
+    System.out.println("Paths.get(...) = " + Paths.get("happyShopDB", "users.json"));
+} 
+    private static final AccountManager INSTANCE = new AccountManager();
     private static final SecureRandom RNG = new SecureRandom();
     private static final int SALT_BYTES = 16;
     private static final String PBKDF2_ALGO = "PBKDF2WithHmacSHA256";
     private static final int PBKDF2_ITERS = 100_000;
     private static final int DERIVED_KEY_BITS = 256;
 
+    private volatile String currentUserId;
+
+    public void setCurrentUser(String userId) {
+        this.currentUserId = userId;
+    }
+
+    public String getCurrentUserId() {
+        return currentUserId;
+    }
+
+    public void clearCurrentUser() {
+        this.currentUserId = null;
+    }
+
+
     private AccountManager() {
         try {
+            System.out.println("USERS_FILE = " + USERS_FILE);
+            System.out.println("AccountManager loaded from: " +
+            AccountManager.class.getProtectionDomain().getCodeSource().getLocation());
+
+            System.out.println("AccountManager source file: " +
+            AccountManager.class.getName());
             loadFromFile();
         } catch (Exception e) {
             
@@ -70,6 +96,7 @@ public class AccountManager {
         String hashB64 = hashPinBase64(pin, saltB64);
         accounts.put(id, new UserRecord(name, saltB64, hashB64));
         try {
+            System.out.println("Saving users to: " + USERS_FILE);
             saveToFile();
         } catch (IOException e) {
             System.err.println("AccountManager: failed to save users.json: " + e.getMessage());
@@ -175,6 +202,7 @@ public class AccountManager {
     }
 
     private synchronized void loadFromFile() throws IOException {
+        if (USERS_FILE == null) return;
         if (!Files.exists(USERS_FILE)) return;
         String content = new String(Files.readAllBytes(USERS_FILE), StandardCharsets.UTF_8).trim();
         if (content.isEmpty()) return;
@@ -209,22 +237,28 @@ public class AccountManager {
         }
     }
 
-    private static String extractJsonValue(String obj, String key) {
-        String pattern = "\"" + key + "\"\s*:\s*\"";
-        int i = obj.indexOf(pattern);
-        if (i < 0) return null;
-        i += pattern.length();
-        StringBuilder sb = new StringBuilder();
-        while (i < obj.length()) {
-            char c = obj.charAt(i++);
-            if (c == '"') break;
-            if (c == '\\' && i < obj.length()) {
-                char esc = obj.charAt(i++);
-                sb.append(esc);
-            } else sb.append(c);
+   private static String extractJsonValue(String obj, String key) {
+    String pattern = "\"" + key + "\":\"";   
+    int i = obj.indexOf(pattern);
+    if (i < 0) return null;
+    i += pattern.length();
+
+    StringBuilder sb = new StringBuilder();
+    while (i < obj.length()) {
+        char c = obj.charAt(i++);
+        if (c == '"') break;
+
+        
+        if (c == '\\' && i < obj.length()) {
+            char esc = obj.charAt(i++);
+            sb.append(esc);
+        } else {
+            sb.append(c);
         }
-        return sb.toString();
     }
+    return sb.toString();
+}
+
 
     private static String escape(String s) {
         if (s == null) return "";

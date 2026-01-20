@@ -45,6 +45,8 @@ public class CustomerView  {
     private Label lbProductInfo;//product text info in searchPage
     private TextArea taTrolley; //in trolley Page
     private TextArea taReceipt;//in receipt page
+    private final Label loginStatusLabel = new Label("Not logged in");
+
 
     // Holds a reference to this CustomerView window for future access and management
     // (e.g., positioning the removeProductNotifier when needed).
@@ -115,7 +117,10 @@ public class CustomerView  {
         HBox hbSearchResult = new HBox(5, ivProduct, lbProductInfo);
         hbSearchResult.setAlignment(Pos.CENTER_LEFT);
 
-        VBox vbSearchPage = new VBox(15, laPageTitle, hbId, hbName, hbBtns, hbSearchResult);
+        loginStatusLabel.setStyle(UIStyle.labelTitleStyle);
+        loginStatusLabel.setWrapText(true);
+
+        VBox vbSearchPage = new VBox(15, loginStatusLabel, laPageTitle, hbId, hbName, hbBtns, hbSearchResult);
         vbSearchPage.setPrefWidth(COLUMN_WIDTH);
         vbSearchPage.setAlignment(Pos.TOP_CENTER);
         vbSearchPage.setStyle("-fx-padding: 15px;");
@@ -189,6 +194,15 @@ public class CustomerView  {
             throw new RuntimeException(e);
         }
     }
+
+    public void setLoginStatus(String userId, String userName) {
+    if (userId != null && userName != null && !userId.isBlank() && !userName.isBlank()) {
+        loginStatusLabel.setText("Logged in as: " + userName + " (" + userId + ")");
+    } else {
+        loginStatusLabel.setText("Not logged in");
+    }
+}
+
 
 
     public void update(String imageName, String searchResult, String trolley, String receipt) {
