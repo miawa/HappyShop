@@ -5,6 +5,8 @@ import ci553.happyshop.storageAccess.DatabaseRW;
 import ci553.happyshop.storageAccess.DatabaseRWFactory;
 import javafx.application.Application;
 import javafx.stage.Stage;
+import ci553.happyshop.client.customer.RemoveProductNotifier;
+
 
 
 /**
@@ -59,8 +61,14 @@ public class CustomerClient extends Application {
         cusController.cusModel = cusModel;
         cusModel.cusView = cusView;
         cusModel.databaseRW = databaseRW;
-
+        
+        RemoveProductNotifier removeProductNotifier = new RemoveProductNotifier();
+        removeProductNotifier.cusView = cusView;
+        cusModel.removeProductNotifier = removeProductNotifier;
         cusView.start(window);
+
+        
+        
     }
 }
 

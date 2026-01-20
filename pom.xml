@@ -25,6 +25,11 @@
             <artifactId>javafx-fxml</artifactId>
             <version>21.0.7</version>
         </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-media</artifactId>
+            <version>21.0.7</version>
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -57,6 +62,12 @@
                 <configuration>
                     <source>21</source>
                     <target>21</target>
+                    <compilerArgs>
+                        <arg>--module-path</arg>
+                        <arg>C:\Users\rubbi\.m2\repository\org\openjfx\javafx-base\21.0.7\javafx-base-21.0.7-win.jar;C:\Users\rubbi\.m2\repository\org\openjfx\javafx-controls\21.0.7\javafx-controls-21.0.7-win.jar;C:\Users\rubbi\.m2\repository\org\openjfx\javafx-fxml\21.0.7\javafx-fxml-21.0.7-win.jar;C:\Users\rubbi\.m2\repository\org\openjfx\javafx-graphics\21.0.7\javafx-graphics-21.0.7-win.jar;C:\Users\rubbi\.m2\repository\org\openjfx\javafx-media\21.0.7\javafx-media-21.0.7-win.jar</arg>
+                        <arg>--add-modules</arg>
+                        <arg>javafx.controls,javafx.media</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>

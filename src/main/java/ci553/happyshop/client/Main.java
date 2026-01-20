@@ -7,6 +7,7 @@ import ci553.happyshop.client.orderTracker.OrderTracker;
 import ci553.happyshop.client.picker.PickerController;
 import ci553.happyshop.client.picker.PickerModel;
 import ci553.happyshop.client.picker.PickerView;
+import ci553.happyshop.utility.SoundManager;
 
 import ci553.happyshop.client.warehouse.*;
 import ci553.happyshop.orderManagement.OrderHub;
@@ -42,6 +43,7 @@ public class Main extends Application {
     //starts the system
     @Override
     public void start(Stage window) throws IOException {
+        SoundManager.click();
         // Show login first on skip/login success start the rest of the clients
         LoginView loginView = new LoginView();
         loginView.onSuccess = () -> {

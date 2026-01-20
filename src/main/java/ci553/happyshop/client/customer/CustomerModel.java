@@ -6,6 +6,8 @@ import ci553.happyshop.storageAccess.DatabaseRW;
 import ci553.happyshop.orderManagement.OrderHub;
 import ci553.happyshop.utility.StorageLocation;
 import ci553.happyshop.utility.ProductListFormatter;
+import ci553.happyshop.client.customer.RemoveProductNotifier;
+
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -46,6 +48,7 @@ public class CustomerModel {
         this.loggedInUserId = userId;
         this.loggedInUserName = userName;
     }
+    public RemoveProductNotifier removeProductNotifier;
 
 
     //SELECT productID, description, image, unitPrice,inStock quantity
@@ -90,11 +93,13 @@ public class CustomerModel {
         if (requestedQty > stock) {
             requestedQty = stock;
             cusView.showPopup(
+                    
                     "Quantity adjusted",
                     "Exceeded maximum stock for this item.\n" +
                     "Set quantity to max available: " + stock
             );
             cusView.setSelectedQty(1);
+            ci553.happyshop.utility.SoundManager.error();
         }
 
         if (requestedQty <= 0) {
@@ -113,6 +118,7 @@ public class CustomerModel {
             displayTaTrolley = ProductListFormatter.buildString(trolley); 
         }
         else{
+            ci553.happyshop.utility.SoundManager.error();
             displayLaSearchResult = "Please search for an available product before adding it to the trolley";
             System.out.println("must search and get an available product before add to trolley");
         }
@@ -133,6 +139,7 @@ public class CustomerModel {
 
             if(insufficientProducts.isEmpty()){ // If stock is sufficient for all products
                 //get OrderHub and tell it to make a new Order
+                ci553.happyshop.utility.SoundManager.purchase();
                 OrderHub orderHub =OrderHub.getOrderHub();
                 Order theOrder = orderHub.newOrder(new ArrayList<>(trolley));
                 trolley.clear();
@@ -142,6 +149,7 @@ public class CustomerModel {
 
             }
             else{ // Some products have insufficient stock — build an error message to inform the customer
+                ci553.happyshop.utility.SoundManager.error();
                 StringBuilder errorMsg = new StringBuilder();
                 for(Product p : insufficientProducts){
                     errorMsg.append("\u2022 "+ p.getProductId()).append(", ")
@@ -157,16 +165,63 @@ public class CustomerModel {
                 // 2. Trigger a message window to notify the customer about the insufficient stock, rather than directly changing displayLaSearchResult.
                 //You can use the provided RemoveProductNotifier class and its showRemovalMsg method for this purpose.
                 //remember close the message window where appropriate (using method closeNotifierWindow() of RemoveProductNotifier class)
-                displayLaSearchResult = "Checkout failed due to insufficient stock for the following products:\n" + errorMsg.toString();
+                if (removeProductNotifier != null) {
+                    removeProductNotifier.showRemovalMsg(errorMsg.toString());
+                } else {
+                    displayLaSearchResult = "Checkout failed due to insufficient stock:\n" + errorMsg;
+                }
                 System.out.println("stock is not enough");
             }
         }
         else{
+            ci553.happyshop.utility.SoundManager.error();
             displayTaTrolley = "Your trolley is empty";
             System.out.println("Your trolley is empty");
         }
         updateView();
     }
+
+    private void adjustTrolleyForInsufficientStock(ArrayList<Product> insufficientProducts) {
+    
+            Map<String, Integer> availableById = new HashMap<>();
+            for (Product p : insufficientProducts) {
+                availableById.put(p.getProductId(), p.getStockQuantity()); 
+            
+            }
+
+            
+            Map<String, Integer> keptCount = new HashMap<>();
+            ArrayList<Product> newTrolley = new ArrayList<>();
+
+        for (Product item : trolley) {
+                String id = item.getProductId();
+                if (!availableById.containsKey(id)) {
+                    newTrolley.add(item);
+                    continue;
+                }
+
+                int available = availableById.get(id);
+
+                
+            if (item.getOrderedQuantity() > 1) {
+                    if (available <= 0) {
+                        continue; // remove it
+                    }
+                    item.setOrderedQuantity(Math.min(item.getOrderedQuantity(), available));
+                    newTrolley.add(item);
+                    continue;
+                }
+
+                int keptSoFar = keptCount.getOrDefault(id, 0);
+            if (keptSoFar < available) {
+                    newTrolley.add(item);
+                    keptCount.put(id, keptSoFar + 1);
+                }
+                
+            }
+
+            trolley = newTrolley; // if trolley is not final, replace it
+        }
 
     private String buildReceipt(Order order) {
     

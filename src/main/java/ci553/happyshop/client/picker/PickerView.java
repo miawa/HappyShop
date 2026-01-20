@@ -100,6 +100,7 @@ public class PickerView  {
     }
 
     private void buttonClicked(ActionEvent event) {
+        ci553.happyshop.utility.SoundManager.click();
         Button button = (Button) event.getSource();
         String btnText = button.getText();
         try {

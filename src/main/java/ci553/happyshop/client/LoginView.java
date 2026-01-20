@@ -65,14 +65,17 @@ public class LoginView {
         stage.show();
 
         btnLogin.setOnAction(e -> {
+            
             String user = tfUser.getText().trim();
             String pass = pf.getText();
             AccountManager mgr = AccountManager.getInstance();
             if (mgr.authenticate(user, pass)) {
+                ci553.happyshop.utility.SoundManager.success();
                 mgr.setCurrentUser(user);
                 if (onSuccess != null) onSuccess.run();
                 stage.close();
             } else {
+                ci553.happyshop.utility.SoundManager.error();
                 Alert a = new Alert(Alert.AlertType.ERROR);
                 a.setTitle("Login Failed");
                 a.setHeaderText(null);
@@ -83,6 +86,7 @@ public class LoginView {
         btnCreate.setOnAction(e -> showCreateAccountDialog(stage));
 
         btnSkip.setOnAction(e -> {
+            ci553.happyshop.utility.SoundManager.click();
             AccountManager.getInstance().clearCurrentUser();
             if (onSuccess != null) onSuccess.run();
             stage.close();
@@ -144,6 +148,7 @@ public class LoginView {
             String pin = pfp.getText().trim();
 
             if (name.isEmpty()) {
+                ci553.happyshop.utility.SoundManager.error();
                 Alert err = new Alert(Alert.AlertType.ERROR);
                 err.setTitle("Invalid Name");
                 err.setHeaderText(null);
@@ -154,6 +159,7 @@ public class LoginView {
 
             // Validate PIN: must be exactly 4 digits
             if (!AccountManager.isValidPin(pin)) {
+                ci553.happyshop.utility.SoundManager.error();
                 Alert err = new Alert(Alert.AlertType.ERROR);
                 err.setTitle("Invalid PIN");
                 err.setHeaderText(null);
@@ -169,6 +175,7 @@ public class LoginView {
 
 
                 // Show confirmation including the generated user ID
+                ci553.happyshop.utility.SoundManager.success();
                 Alert a = new Alert(Alert.AlertType.INFORMATION);
                 a.setTitle("Account Created");
                 a.setHeaderText(null);
@@ -176,6 +183,7 @@ public class LoginView {
                 a.showAndWait();
                 dialog.close();
             } catch (Exception ex) {
+                ci553.happyshop.utility.SoundManager.error();
                 Alert err = new Alert(Alert.AlertType.ERROR);
                 err.setTitle("Create Account Error");
                 err.setHeaderText(null);

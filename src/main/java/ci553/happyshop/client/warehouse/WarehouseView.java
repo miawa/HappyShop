@@ -469,6 +469,7 @@ public class WarehouseView  {
 
 
     private void buttonClick(ActionEvent event)  {
+        ci553.happyshop.utility.SoundManager.click();
         Button btn= (Button)event.getSource();
         String action = btn.getText();
 

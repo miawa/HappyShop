@@ -201,6 +201,7 @@ public class CustomerView  {
 
 
     private void buttonClicked(ActionEvent event) {
+        ci553.happyshop.utility.SoundManager.click();
         try{
             Button btn = (Button)event.getSource();
             String action = btn.getText();
