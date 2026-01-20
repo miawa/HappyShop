@@ -47,6 +47,9 @@ public class CustomerView  {
     private TextArea taReceipt;//in receipt page
     private final Label loginStatusLabel = new Label("Not logged in");
 
+    private int selectedQty = 1;   //Quantity for adding items to trolley, quantity default is 1
+    private TextField tfQty;
+
 
     // Holds a reference to this CustomerView window for future access and management
     // (e.g., positioning the removeProductNotifier when needed).
@@ -110,6 +113,27 @@ public class CustomerView  {
         ivProduct.setPreserveRatio(true); // Image keeps its original shape and fits inside 60×60
         ivProduct.setSmooth(true); //make it smooth and nice-looking
 
+        Label qtyLabel = new Label("Quantity:");
+        qtyLabel.setStyle(UIStyle.labelStyle);
+
+        Button btnMinus = new Button("-");
+        btnMinus.setStyle(UIStyle.buttonStyle);
+
+        tfQty = new TextField("1");
+        tfQty.setPrefWidth(50);
+        tfQty.setAlignment(Pos.CENTER);
+        tfQty.setStyle(UIStyle.textFiledStyle);
+
+        Button btnPlus = new Button("+");
+        btnPlus.setStyle(UIStyle.buttonStyle);
+
+        HBox hbQty = new HBox(8, qtyLabel, btnMinus, tfQty, btnPlus);
+        hbQty.setAlignment(Pos.CENTER);
+
+        btnMinus.setOnAction(e -> adjustQty(-1));
+        btnPlus.setOnAction(e -> adjustQty(+1));
+
+
         lbProductInfo = new Label("Thank you for shopping with us.");
         lbProductInfo.setWrapText(true);
         lbProductInfo.setMinHeight(Label.USE_PREF_SIZE);  // Allow auto-resize
@@ -120,7 +144,7 @@ public class CustomerView  {
         loginStatusLabel.setStyle(UIStyle.labelTitleStyle);
         loginStatusLabel.setWrapText(true);
 
-        VBox vbSearchPage = new VBox(15, loginStatusLabel, laPageTitle, hbId, hbName, hbBtns, hbSearchResult);
+        VBox vbSearchPage = new VBox(15, loginStatusLabel, laPageTitle, hbId, hbName, hbBtns, hbSearchResult, hbQty);
         vbSearchPage.setPrefWidth(COLUMN_WIDTH);
         vbSearchPage.setAlignment(Pos.TOP_CENTER);
         vbSearchPage.setStyle("-fx-padding: 15px;");
@@ -196,12 +220,45 @@ public class CustomerView  {
     }
 
     public void setLoginStatus(String userId, String userName) {
-    if (userId != null && userName != null && !userId.isBlank() && !userName.isBlank()) {
-        loginStatusLabel.setText("Logged in as: " + userName + " (" + userId + ")");
-    } else {
+        if (userId != null && userName != null && !userId.isBlank() && !userName.isBlank()) {
+            loginStatusLabel.setText("Logged in as: " + userName + " (" + userId + ")");
+     } else {
         loginStatusLabel.setText("Not logged in");
+        }
     }
-}
+
+    private void adjustQty(int delta) {
+        int qty = getQtyFromField();
+        qty += delta;
+        if (qty < 1) qty = 1;
+        tfQty.setText(String.valueOf(qty));
+    }
+
+    private int getQtyFromField() {
+        try {
+            int qty = Integer.parseInt(tfQty.getText().trim());
+            return Math.max(1, qty);
+        } catch (Exception e) {
+            return 1;
+        }
+    }
+
+    public int getSelectedQty() {
+        return getQtyFromField(); //Calls this to find selected quantity from the text field
+    }
+
+    public void setSelectedQty(int qty) {
+        tfQty.setText(String.valueOf(Math.max(1, qty)));
+    }
+
+    public void showPopup(String title, String msg) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setTitle(title);
+        a.setHeaderText(null);
+        a.setContentText(msg);
+        a.showAndWait();
+    }
+
 
 
 

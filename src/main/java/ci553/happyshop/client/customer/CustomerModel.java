@@ -84,9 +84,33 @@ public class CustomerModel {
             //TODO
             // 1. Merges items with the same product ID (combining their quantities).
             // 2. Sorts the products in the trolley by product ID.
+            int requestedQty = cusView.getSelectedQty();
+        int stock = theProduct.getStockQuantity();
+
+        if (requestedQty > stock) {
+            requestedQty = stock;
+            cusView.showPopup(
+                    "Quantity adjusted",
+                    "Exceeded maximum stock for this item.\n" +
+                    "Set quantity to max available: " + stock
+            );
+            cusView.setSelectedQty(1);
+        }
+
+        if (requestedQty <= 0) {
+            displayLaSearchResult = "Quantity must be at least 1.";
+            updateView();
+            return;
+        }
+
+       
+        for (int i = 0; i < requestedQty; i++) {
             trolley.add(theProduct);
+        }
+
+        
             mergeAndSortTrolley();
-            displayTaTrolley = ProductListFormatter.buildString(trolley); //build a String for trolley so that we can show it
+            displayTaTrolley = ProductListFormatter.buildString(trolley); 
         }
         else{
             displayLaSearchResult = "Please search for an available product before adding it to the trolley";
