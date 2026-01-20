@@ -150,9 +150,12 @@ public class Main extends Application {
         cusController.cusModel = cusModel;
         cusModel.cusView = cusView;
         cusModel.databaseRW = databaseRW;
+        
+
         AccountManager mgr = AccountManager.getInstance();
         String uid = mgr.getCurrentUserId();
         String name = (uid == null) ? null : mgr.getNameFor(uid);
+        cusModel.setLoggedInUser(uid, name);
         cusView.setLoginStatus(uid, name);
 
         cusView.start(new Stage());

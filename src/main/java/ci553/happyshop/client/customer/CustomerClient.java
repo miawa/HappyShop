@@ -52,6 +52,7 @@ public class CustomerClient extends Application {
         String uid = mgr.getCurrentUserId();
         String name = (uid == null) ? null : mgr.getNameFor(uid);
         cusView.setLoginStatus(uid, name);
+        cusModel.setLoggedInUser(uid, name);
 
 
         cusView.cusController = cusController;

@@ -7,6 +7,10 @@ import ci553.happyshop.orderManagement.OrderHub;
 import ci553.happyshop.utility.StorageLocation;
 import ci553.happyshop.utility.ProductListFormatter;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,6 +37,16 @@ public class CustomerModel {
     private String displayLaSearchResult = "No Product was searched yet"; // Label showing search result message (Search Page)
     private String displayTaTrolley = "";                                // Text area content showing current trolley items (Trolley Page)
     private String displayTaReceipt = "";                                // Text area content showing receipt after checkout (Receipt Page)
+
+
+    private String loggedInUserId;
+    private String loggedInUserName;
+
+    public void setLoggedInUser(String userId, String userName) {
+        this.loggedInUserId = userId;
+        this.loggedInUserName = userName;
+    }
+
 
     //SELECT productID, description, image, unitPrice,inStock quantity
     void search() throws SQLException {
@@ -97,13 +111,9 @@ public class CustomerModel {
                 Order theOrder = orderHub.newOrder(trolley);
                 trolley.clear();
                 displayTaTrolley ="";
-                displayTaReceipt = String.format(
-                        "Order_ID: %s\nOrdered_Date_Time: %s\n%s",
-                        theOrder.getOrderId(),
-                        theOrder.getOrderedDateTime(),
-                        ProductListFormatter.buildString(theOrder.getProductList())
-                );
+                displayTaReceipt = buildReceipt(theOrder);
                 System.out.println(displayTaReceipt);
+
             }
             else{ // Some products have insufficient stock — build an error message to inform the customer
                 StringBuilder errorMsg = new StringBuilder();
@@ -131,6 +141,36 @@ public class CustomerModel {
         }
         updateView();
     }
+
+    private String buildReceipt(Order order) {
+    
+        StringBuilder sb = new StringBuilder();
+        sb.append("=-= HappyShop Receipt =-=\n");
+        sb.append("Order_ID: ").append(order.getOrderId()).append("\n");
+        sb.append("Ordered_Date_Time: ").append(order.getOrderedDateTime()).append("\n\n");
+
+        if (loggedInUserId != null && loggedInUserName != null) {
+            sb.append("Customer: ").append(loggedInUserName)
+            .append(" (").append(loggedInUserId).append(")\n\n");
+        }
+        sb.append("--- Items ---\n");
+        sb.append(ProductListFormatter.buildString(order.getProductList())).append("\n");
+
+    
+        double subtotal = 0.0;
+        for (Product p : order.getProductList()) {
+            subtotal += p.getUnitPrice() * p.getOrderedQuantity();
+        }
+
+        sb.append("\n--- Summary ---\n");
+        sb.append(String.format("Subtotal: £%.2f\n", subtotal));
+
+        
+   
+        sb.append("\nThank you for shopping with HappyShop!\n");
+        return sb.toString();
+    }
+
 
     /**
      * Groups products by their productId to optimize database queries and updates.
