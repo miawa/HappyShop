@@ -55,6 +55,14 @@ public interface DatabaseRW {
     ArrayList<Product> purchaseStocks(ArrayList<Product> proList) throws SQLException;
 
 
+     
+        /**
+         * Retrieves all products from the database.
+         *
+         * @return a list of all products
+     */
+    ArrayList<Product> getAllProducts() throws SQLException;
+
     /**
      * Updates the details of a product identified by its ID.
      *

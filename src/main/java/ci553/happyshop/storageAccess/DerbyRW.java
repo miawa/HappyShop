@@ -197,6 +197,26 @@ public class DerbyRW implements DatabaseRW {
         return insufficientProducts;
     }
 
+    //get all products from database
+    public ArrayList<Product> getAllProducts() throws SQLException {
+    ArrayList<Product> products = new ArrayList<>();
+    String query = "SELECT * FROM ProductTable ORDER BY productID";
+
+    try (Connection conn = DriverManager.getConnection(dbURL);
+         PreparedStatement pstmt = conn.prepareStatement(query);
+         ResultSet rs = pstmt.executeQuery()) {
+
+        while (rs.next()) {
+            products.add(makeProObjFromDbRecord(rs));
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        throw e;
+    }
+
+        return products;
+    }
+
 
     //warehouse edits an existing product
     public void updateProduct(String id, String des, double price, String iName, int stock) throws SQLException {

@@ -72,8 +72,11 @@ public class CustomerView  {
         hbRoot.setAlignment(Pos.CENTER);
         hbRoot.setStyle(UIStyle.rootStyle);
 
-        Scene scene = new Scene(hbRoot, WIDTH, HEIGHT);
+        Scene scene = new Scene(hbRoot, WIDTH + 60, HEIGHT + 60);
         window.setScene(scene);
+        window.sizeToScene();
+        window.setMinWidth(window.getWidth());
+        window.setMinHeight(window.getHeight());
         window.setTitle("🛒 HappyShop Customer Client");
         WinPosManager.registerWindow(window,WIDTH,HEIGHT); //calculate position x and y for this window
         window.show();
@@ -98,14 +101,22 @@ public class CustomerView  {
         tfName.setStyle(UIStyle.textFiledStyle);
         HBox hbName = new HBox(10, laName, tfName);
 
+        Button btnBrowse = new Button("Browse");
+        btnBrowse.setStyle(UIStyle.buttonStyle);
+        btnBrowse.setOnAction(this::buttonClicked);
+        btnBrowse.setMinWidth(90);
+
+
         Label laPlaceHolder = new Label(  " ".repeat(15)); //create left-side spacing so that this HBox aligns with others in the layout.
         Button btnSearch = new Button("Search");
         btnSearch.setStyle(UIStyle.buttonStyle);
         btnSearch.setOnAction(this::buttonClicked);
+        btnSearch.setMinWidth(90);
         Button btnAddToTrolley = new Button("Add to Trolley");
+        btnAddToTrolley.setMinWidth(120);
         btnAddToTrolley.setStyle(UIStyle.buttonStyle);
         btnAddToTrolley.setOnAction(this::buttonClicked);
-        HBox hbBtns = new HBox(10, laPlaceHolder,btnSearch, btnAddToTrolley);
+        HBox hbBtns = new HBox(10, laPlaceHolder,btnSearch, btnBrowse, btnAddToTrolley);
 
         ivProduct = new ImageView("imageHolder.jpg");
         ivProduct.setFitHeight(60);
@@ -161,10 +172,12 @@ public class CustomerView  {
         taTrolley.setPrefSize(WIDTH/2, HEIGHT-50);
 
         Button btnCancel = new Button("Cancel");
+        btnCancel.setMinWidth(90);
         btnCancel.setOnAction(this::buttonClicked);
         btnCancel.setStyle(UIStyle.buttonStyle);
 
         Button btnCheckout = new Button("Check Out");
+        btnCheckout.setMinWidth(90);
         btnCheckout.setOnAction(this::buttonClicked);
         btnCheckout.setStyle(UIStyle.buttonStyle);
 
@@ -223,6 +236,8 @@ public class CustomerView  {
     public void setLoginStatus(String userId, String userName) {
         if (userId != null && userName != null && !userId.isBlank() && !userName.isBlank()) {
             loginStatusLabel.setText("Logged in as: " + userName + " (" + userId + ")");
+            loginStatusLabel.setWrapText(true);
+            loginStatusLabel.setMaxWidth(Double.MAX_VALUE);
      } else {
         loginStatusLabel.setText("Not logged in");
         }

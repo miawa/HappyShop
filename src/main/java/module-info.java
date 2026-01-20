@@ -12,6 +12,8 @@ module ci553.happyshop {
     opens ci553.happyshop.client.orderTracker;
     opens ci553.happyshop.client.warehouse;
     opens ci553.happyshop.client.emergency;
+    opens ci553.happyshop.catalogue to javafx.base;
+
 
     exports ci553.happyshop;
     exports ci553.happyshop.client;

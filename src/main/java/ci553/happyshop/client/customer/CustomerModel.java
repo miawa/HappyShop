@@ -312,6 +312,22 @@ public class CustomerModel {
         displayTaReceipt="";
     }
 
+    void browseStock() throws SQLException {
+        
+    ArrayList<Product> products = databaseRW.getAllProducts();
+    System.out.println("[CustomerModel] getAllProducts size = " + products.size());
+    if (products == null || products.isEmpty()) {
+        cusView.showPopup("Current Stock", "No products found in the database.");
+        return;
+    }
+
+    BrowseStockView browseStockView = new BrowseStockView();
+
+    browseStockView.show(products, cusView.getWindowBounds());
+    }
+
+    
+
     void updateView() {
         if(theProduct != null){
             imageName = theProduct.getProductImageName();
