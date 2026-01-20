@@ -71,11 +71,13 @@ public class AccountManager {
 
     private static class UserRecord {
         final String name;
+        final String role; 
         final String saltBase64;
         final String pinHashBase64;
 
-        UserRecord(String name, String saltBase64, String pinHashBase64) {
+        UserRecord(String name, String role, String saltBase64, String pinHashBase64) {
             this.name = name;
+            this.role = role; 
             this.saltBase64 = saltBase64;
             this.pinHashBase64 = pinHashBase64;
         }
@@ -94,7 +96,8 @@ public class AccountManager {
 
         String saltB64 = generateSaltBase64();
         String hashB64 = hashPinBase64(pin, saltB64);
-        accounts.put(id, new UserRecord(name, saltB64, hashB64));
+        accounts.put(id, new UserRecord(name, "CUSTOMER", saltB64, hashB64));
+        
         try {
             System.out.println("Saving users to: " + USERS_FILE);
             saveToFile();
@@ -105,19 +108,24 @@ public class AccountManager {
     }
 
    
-    public synchronized String createAccount(String id, String name, String pin) {
+    public synchronized String createAccount(String id, String name, String pin, String role) {
         if (!isValidPin(pin)) {
             throw new IllegalArgumentException("PIN must be exactly 4 numeric digits");
         }
         if (id == null || !id.matches("\\d{4}")) {
             throw new IllegalArgumentException("User ID must be a 4-digit string");
         }
+        if (role == null || role.isBlank()) {
+            role = "CUSTOMER";
+        }
         if (accounts.containsKey(id)) {
             throw new IllegalStateException("User ID already taken");
         }
         String saltB64 = generateSaltBase64();
         String hashB64 = hashPinBase64(pin, saltB64);
-        accounts.put(id, new UserRecord(name, saltB64, hashB64));
+        accounts.put(id, new UserRecord(name, role,saltB64, hashB64));
+
+
         try {
             saveToFile();
         } catch (IOException e) {
@@ -148,6 +156,12 @@ public class AccountManager {
         } while (accounts.containsKey(id));
         return id;
     }
+
+    public String getRoleFor(String userId) {
+        UserRecord r = accounts.get(userId);
+        return r == null ? null : r.role;
+    }
+
 
     public String getNameFor(String userId) {
         UserRecord r = accounts.get(userId);
@@ -190,8 +204,8 @@ public class AccountManager {
             for (Map.Entry<String, UserRecord> e : accounts.entrySet()) {
                 String uid = e.getKey();
                 UserRecord r = e.getValue();
-                String obj = String.format("{\"userId\":\"%s\",\"name\":\"%s\",\"salt\":\"%s\",\"pinHash\":\"%s\"}",
-                        escape(uid), escape(r.name), escape(r.saltBase64), escape(r.pinHashBase64));
+                String obj = String.format("{\"userId\":\"%s\",\"name\":\"%s\",\"role\":\"%s\",\"salt\":\"%s\",\"pinHash\":\"%s\"}",
+                        escape(uid), escape(r.name), escape(r.role), escape(r.saltBase64), escape(r.pinHashBase64));
                 parts.add(obj);
             }
             String json = "[" + String.join(",", parts) + "]";
@@ -229,10 +243,11 @@ public class AccountManager {
             String obj = content.substring(objStart, idx);
             String userId = extractJsonValue(obj, "userId");
             String name = extractJsonValue(obj, "name");
+            String role = extractJsonValue(obj, "role");
             String salt = extractJsonValue(obj, "salt");
             String pinHash = extractJsonValue(obj, "pinHash");
             if (userId != null && salt != null && pinHash != null) {
-                accounts.put(userId, new UserRecord(name == null ? "" : name, salt, pinHash));
+                accounts.put(userId, new UserRecord(name == null ? "" : name, role == null ? "" : role, salt, pinHash));
             }
         }
     }

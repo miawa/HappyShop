@@ -42,11 +42,17 @@ public class Main extends Application {
     //starts the system
     @Override
     public void start(Stage window) throws IOException {
-        // Show login first; on skip/login success start the rest of the clients
+        // Show login first on skip/login success start the rest of the clients
         LoginView loginView = new LoginView();
         loginView.onSuccess = () -> {
             try {
-                startAllClients();
+                AccountManager mgr = AccountManager.getInstance();
+
+                String userId = mgr.getCurrentUserId();
+                String role = (userId == null) ? "CUSTOMER" : mgr.getRoleFor(userId);
+
+                launchRoleClients(role);
+
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -54,7 +60,56 @@ public class Main extends Application {
         loginView.start(window);
     }
 
-    // Extracted startup sequence so it can be invoked after login
+    private void launchRoleClients(String role) throws IOException {
+
+    // Always allow emergency exit
+    startEmergencyExit();
+
+    if (role == null || role.isBlank()) role = "CUSTOMER";
+
+    switch (role.toUpperCase()) {
+
+        case "CUSTOMER":
+            // Customer uses OrderHub to create orders, so observers should exist
+            startPickerClient();      // observer
+            startOrderTracker();      // observer
+            initializeOrderMap();     // after observers are registered
+
+            startCustomerClient();    // customer UI (your login status label is set here)
+            break;
+
+        case "PICKER":
+            // Picker needs OrderHub + order map, and should see orders.
+            startPickerClient();      // observer
+            startOrderTracker();      // optional, but helps visibility/debug
+            initializeOrderMap();     // after observers
+
+            // no customer window
+            break;
+
+        case "TRACKER":
+            // Tracker observes OrderHub order changes
+            startOrderTracker();      // observer
+            startPickerClient();      // optional, but otherwise no one progresses orders
+            initializeOrderMap();     // after observers
+
+            // no customer window
+            break;
+
+        default:
+            // safe fallback
+            startPickerClient();
+            startOrderTracker();
+            initializeOrderMap();
+            startCustomerClient();
+            break;
+    }
+}
+
+
+    
+
+    
     private void startAllClients() throws IOException {
         startCustomerClient();
         startPickerClient();
@@ -73,6 +128,8 @@ public class Main extends Application {
 
         startEmergencyExit();
     }
+
+    
 
     /** The customer GUI -search prodduct, add to trolley, cancel/submit trolley, view receipt
      *
@@ -170,6 +227,8 @@ public class Main extends Application {
         historyWindow.warehouseView = view;
         alertSimulator.warehouseView = view;
     }
+
+    
 
     //starts the EmergencyExit GUI, - used to close the entire application immediatelly
     private void startEmergencyExit(){

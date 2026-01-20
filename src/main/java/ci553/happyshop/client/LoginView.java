@@ -5,6 +5,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -118,12 +119,21 @@ public class LoginView {
         HBox hb = new HBox(10, create, cancel);
         hb.setAlignment(Pos.CENTER_RIGHT);
 
-        g.add(lid, 0, 0, 2, 1);
+        Label lr = new Label("Role:");
+        ComboBox<String> cbRole = new ComboBox<>();
+        cbRole.getItems().addAll("CUSTOMER", "PICKER", "TRACKER");
+        cbRole.setValue("CUSTOMER");
+
         g.add(lu, 0, 1);
         g.add(tfu, 1, 1);
-        g.add(lp, 0, 2);
-        g.add(pfp, 1, 2);
-        g.add(hb, 1, 3);
+
+        g.add(lr, 0, 2);
+        g.add(cbRole, 1, 2);
+
+        g.add(lp, 0, 3);
+        g.add(pfp, 1, 3);
+
+        g.add(hb, 1, 4);
 
         Scene s = new Scene(g, 360, 180);
         dialog.setScene(s);
@@ -154,7 +164,9 @@ public class LoginView {
 
             try {
                 // Use the previewed id when creating the account
-                String generatedId = mgr.createAccount(previewId, name, pin);
+                String role = cbRole.getValue();
+                String generatedId = mgr.createAccount(previewId, name, pin, role);
+
 
                 // Show confirmation including the generated user ID
                 Alert a = new Alert(Alert.AlertType.INFORMATION);
