@@ -52,4 +52,8 @@ happyShopDB/*.lck
 derby.log
 
 
-orders/
+
+orders/ordered/
+orders/progressing/
+orders/collected/
+!orders/orderCounter.txt
