@@ -74,7 +74,7 @@ public class CustomerModel {
         }
     }
     else {
-        
+        //searches db for name keyword if no productId is provided
         String nameKeyword = cusView.tfName.getText().trim(); 
 
         if(!nameKeyword.isEmpty()){

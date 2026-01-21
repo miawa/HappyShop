@@ -8,6 +8,7 @@ import ci553.happyshop.client.picker.PickerController;
 import ci553.happyshop.client.picker.PickerModel;
 import ci553.happyshop.client.picker.PickerView;
 import ci553.happyshop.utility.SoundManager;
+import ci553.happyshop.client.manager.*;
 
 import ci553.happyshop.client.warehouse.*;
 import ci553.happyshop.orderManagement.OrderHub;
@@ -73,30 +74,45 @@ public class Main extends Application {
 
         case "CUSTOMER":
             // Customer uses OrderHub to create orders, so observers should exist
-            startPickerClient();      // observer
-            startOrderTracker();      // observer
-            initializeOrderMap();     // after observers are registered
+            startPickerClient();      
+            startOrderTracker();      
+            initializeOrderMap();     
 
             startCustomerClient();    // customer UI (your login status label is set here)
             break;
 
         case "PICKER":
             // Picker needs OrderHub + order map, and should see orders.
-            startPickerClient();      // observer
-            startOrderTracker();      // optional, but helps visibility/debug
-            initializeOrderMap();     // after observers
+            startPickerClient();      
+            startOrderTracker();      
+            initializeOrderMap();     
 
             // no customer window
             break;
 
         case "TRACKER":
             // Tracker observes OrderHub order changes
-            startOrderTracker();      // observer
-            startPickerClient();      // optional, but otherwise no one progresses orders
-            initializeOrderMap();     // after observers
+            startOrderTracker();      
+            startPickerClient();      
+            initializeOrderMap();     
 
             // no customer window
             break;
+        case "WAREHOUSE":
+            // Tracker observes OrderHub order changes
+            startWarehouseClient();    
+            startOrderTracker();      
+            initializeOrderMap();     
+
+            // no customer window
+            break;  
+        case "MANAGER":
+            startManagerClient();
+            startPickerClient();
+            startOrderTracker();
+            initializeOrderMap();
+
+            break;      
 
         default:
             // safe fallback
@@ -112,20 +128,21 @@ public class Main extends Application {
     
 
     
-    private void startAllClients() throws IOException {
+    public void startAllClients() throws IOException {
         startCustomerClient();
         startPickerClient();
         startOrderTracker();
+        startManagerClient();
 
-        startCustomerClient();
-        startPickerClient();
-        startOrderTracker();
+        //startCustomerClient();
+        //startPickerClient();
+        //startOrderTracker();
 
         // Initializes the order map for the OrderHub. This must be called after starting the observer clients
         // (such as OrderTracker and Picker clients) to ensure they are properly registered for receiving updates.
         initializeOrderMap();
 
-        startWarehouseClient();
+        //startWarehouseClient();
         startWarehouseClient();
 
         startEmergencyExit();
@@ -165,6 +182,18 @@ public class Main extends Application {
         //RemoveProductNotifier removeProductNotifier = new RemoveProductNotifier();
         //removeProductNotifier.cusView = cusView;
         //cusModel.removeProductNotifier = removeProductNotifier;
+    }
+
+    private void startManagerClient() {
+        ManagerView view = new ManagerView();
+        ManagerController controller = new ManagerController();
+        ManagerModel model = new ManagerModel();
+
+        view.controller = controller;
+        controller.model = model;
+        model.view = view;
+
+        view.start(new Stage());
     }
 
     /** The picker GUI, - for staff to pack customer's order,

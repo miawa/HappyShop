@@ -134,6 +134,65 @@ public class AccountManager {
         return id;
     }
 
+    public static final class AccountInfo {
+        public final String userId;
+        public final String name;
+        public final String role;
+
+        public AccountInfo(String userId, String name, String role) {
+            this.userId = userId;
+            this.name = name;
+            this.role = role;
+        }
+    }
+
+    public synchronized boolean deleteAccount(String userId) {
+        if (userId == null) return false;
+
+        // optional safety: don’t let manager delete the currently logged-in user
+        if (userId.equals(currentUserId)) return false;
+
+        UserRecord removed = accounts.remove(userId);
+        if (removed == null) return false;
+
+        try { saveToFile(); } catch (IOException ignored) {}
+        return true;
+    }
+
+    public synchronized boolean updateAccount(String userId, String newName, String newRole) {
+        if (userId == null) return false;
+
+        UserRecord existing = accounts.get(userId);
+        if (existing == null) return false;
+
+        if (newName == null) newName = "";
+        if (newRole == null || newRole.isBlank()) newRole = existing.role;
+
+        accounts.put(userId, new UserRecord(
+                newName,
+                newRole,
+                existing.saltBase64,
+                existing.pinHashBase64
+        ));
+
+        try { saveToFile(); } catch (IOException ignored) {}
+        return true;
+}
+
+
+
+    public List<AccountInfo> getAllAccounts() {
+        List<AccountInfo> out = new ArrayList<>();
+        for (Map.Entry<String, UserRecord> e : accounts.entrySet()) {
+            String id = e.getKey();
+            UserRecord r = e.getValue();
+            out.add(new AccountInfo(id, r.name, r.role));
+        }
+        return out;
+    }
+
+
+
    
     public boolean authenticate(String userId, String pin) {
         if (userId == null || pin == null) return false;

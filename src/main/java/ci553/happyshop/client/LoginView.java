@@ -13,8 +13,12 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+
+import java.io.IOException;
+
 import ci553.happyshop.client.AccountManager;
 import ci553.happyshop.utility.UIStyle;
+
 
 /**
  * Simple JavaFX login UI where a user can enter userID and password.
@@ -86,10 +90,16 @@ public class LoginView {
         btnCreate.setOnAction(e -> showCreateAccountDialog(stage));
 
         btnSkip.setOnAction(e -> {
-            ci553.happyshop.utility.SoundManager.click();
+            ci553.happyshop.utility.SoundManager.click();    
             AccountManager.getInstance().clearCurrentUser();
-            if (onSuccess != null) onSuccess.run();
             stage.close();
+
+            try {
+                ci553.happyshop.client.Main main = new ci553.happyshop.client.Main();
+                main.startAllClients();
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         });
 
     }
@@ -125,7 +135,7 @@ public class LoginView {
 
         Label lr = new Label("Role:");
         ComboBox<String> cbRole = new ComboBox<>();
-        cbRole.getItems().addAll("CUSTOMER", "PICKER", "TRACKER");
+        cbRole.getItems().addAll("CUSTOMER", "PICKER", "TRACKER","WAREHOUSE","MANAGER");
         cbRole.setValue("CUSTOMER");
 
         g.add(lu, 0, 1);
