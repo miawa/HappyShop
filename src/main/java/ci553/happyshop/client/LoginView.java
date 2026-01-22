@@ -81,18 +81,14 @@ public class LoginView {
 
         AccountManager mgr = AccountManager.getInstance();
 
-        if (mgr.authenticate(user, pass)) {
+        LoginState state = mgr.login(user, pass);
+
+        if (state == LoginState.AUTHENTICATED) {
             ci553.happyshop.utility.SoundManager.success();
-
-            mgr.setCurrentUser(user);
-            mgr.setLoginState(LoginState.AUTHENTICATED);
-
             if (onSuccess != null) onSuccess.run();
             stage.close();
         } else {
             ci553.happyshop.utility.SoundManager.error();
-
-            mgr.setLoginState(LoginState.INVALID);
             showError("Login Failed", "Invalid user ID or PIN. Please try again.");
         }
     }

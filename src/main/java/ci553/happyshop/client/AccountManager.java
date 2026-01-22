@@ -80,6 +80,17 @@ public class AccountManager {
         return INSTANCE;
     }
 
+    public synchronized LoginState login(String userId, String pin) {
+        if (authenticate(userId, pin)) {
+            setCurrentUser(userId); 
+            return LoginState.AUTHENTICATED;
+        }
+        setLoginState(LoginState.INVALID);
+        return LoginState.INVALID;
+    }
+
+
+
     private static class UserRecord {
         final String name;
         final UserRole role;

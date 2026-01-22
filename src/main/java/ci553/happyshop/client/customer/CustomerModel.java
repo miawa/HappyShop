@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -167,6 +168,8 @@ public class CustomerModel {
             mergeAndSortTrolley();
             ArrayList<Product> groupedTrolley= groupProductsById(trolley);
             ArrayList<Product> insufficientProducts= databaseRW.purchaseStocks(groupedTrolley);
+            //ArrayList<Product> insufficientProducts = attemptPurchase();
+
 
             if(insufficientProducts.isEmpty()){ // If stock is sufficient for all products
                 //get OrderHub and tell it to make a new Order
@@ -356,6 +359,25 @@ public class CustomerModel {
 
     browseStockView.show(products, cusView.getWindowBounds());
     }
+
+    //polymorphic method for testing 
+
+    public Product findProductById(String productId) throws SQLException {
+        if (productId == null) return null;
+        String id = productId.trim();
+        if (id.isEmpty()) return null;
+
+        if (databaseRW == null) {
+            throw new IllegalStateException("databaseRW not set");
+        }
+        return databaseRW.searchByProductId(id);
+    }
+
+    public ArrayList<Product> attemptPurchase() throws SQLException {
+            mergeAndSortTrolley();
+            ArrayList<Product> groupedTrolley = groupProductsById(trolley);
+            return databaseRW.purchaseStocks(groupedTrolley);
+        }
 
     
 

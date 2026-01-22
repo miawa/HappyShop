@@ -68,6 +68,55 @@ public class Main extends Application {
         loginView.start(window);
     }
 
+    public enum ClientType {
+        CUSTOMER, PICKER, TRACKER, WAREHOUSE, MANAGER, EMERGENCY
+    }
+
+    
+    public static java.util.List<ClientType> planClientsForRole(UserRole role) {
+        if (role == null) role = UserRole.CUSTOMER;
+
+        java.util.ArrayList<ClientType> plan = new java.util.ArrayList<>();
+        plan.add(ClientType.EMERGENCY);
+
+        switch (role) {
+            case CUSTOMER:
+                plan.add(ClientType.PICKER);
+                plan.add(ClientType.TRACKER);
+                plan.add(ClientType.CUSTOMER);
+                break;
+
+            case PICKER:
+                plan.add(ClientType.PICKER);
+                plan.add(ClientType.TRACKER);
+                break;
+
+            case TRACKER:
+                plan.add(ClientType.TRACKER);
+                plan.add(ClientType.PICKER);
+                break;
+
+            case WAREHOUSE:
+                plan.add(ClientType.WAREHOUSE);
+                plan.add(ClientType.TRACKER);
+                break;
+
+            case MANAGER:
+                plan.add(ClientType.MANAGER);
+                plan.add(ClientType.PICKER);
+                plan.add(ClientType.TRACKER);
+                break;
+
+            default:
+                plan.add(ClientType.PICKER);
+                plan.add(ClientType.TRACKER);
+                plan.add(ClientType.CUSTOMER);
+                break;
+        }
+
+        return plan;
+    }
+
     private void launchRoleClients(UserRole role) throws IOException {
 
     // Always allow emergency exit
