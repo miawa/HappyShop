@@ -175,7 +175,6 @@ public class AccountManager {
     public synchronized boolean deleteAccount(String userId) {
         if (userId == null) return false;
 
-        // optional safety: don’t let manager delete the currently logged-in user
         if (userId.equals(currentUserId)) return false;
 
         UserRecord removed = accounts.remove(userId);
