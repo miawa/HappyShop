@@ -9,6 +9,8 @@ import ci553.happyshop.client.picker.PickerModel;
 import ci553.happyshop.client.picker.PickerView;
 import ci553.happyshop.utility.SoundManager;
 import ci553.happyshop.client.manager.*;
+import ci553.happyshop.client.UserRole;
+
 
 import ci553.happyshop.client.warehouse.*;
 import ci553.happyshop.orderManagement.OrderHub;
@@ -52,9 +54,12 @@ public class Main extends Application {
                 AccountManager mgr = AccountManager.getInstance();
 
                 String userId = mgr.getCurrentUserId();
-                String role = (userId == null) ? "CUSTOMER" : mgr.getRoleFor(userId);
+                UserRole role = (userId == null) ? UserRole.CUSTOMER : mgr.getRoleFor(userId);
+                if (role == null) role = UserRole.CUSTOMER;
 
                 launchRoleClients(role);
+
+
 
             } catch (IOException ex) {
                 ex.printStackTrace();
@@ -63,65 +68,54 @@ public class Main extends Application {
         loginView.start(window);
     }
 
-    private void launchRoleClients(String role) throws IOException {
+    private void launchRoleClients(UserRole role) throws IOException {
 
     // Always allow emergency exit
     startEmergencyExit();
 
-    if (role == null || role.isBlank()) role = "CUSTOMER";
+    if (role == null) role = UserRole.CUSTOMER;
 
-    switch (role.toUpperCase()) {
+        switch (role) {
+            case CUSTOMER:
+                startPickerClient();
+                startOrderTracker();
+                initializeOrderMap();
+                startCustomerClient();
+                break;
 
-        case "CUSTOMER":
-            // Customer uses OrderHub to create orders, so observers should exist
-            startPickerClient();      
-            startOrderTracker();      
-            initializeOrderMap();     
+            case PICKER:
+                startPickerClient();
+                startOrderTracker();
+                initializeOrderMap();
+                break;
 
-            startCustomerClient();    // customer UI (your login status label is set here)
-            break;
+            case TRACKER:
+                startOrderTracker();
+                startPickerClient();
+                initializeOrderMap();
+                break;
 
-        case "PICKER":
-            // Picker needs OrderHub + order map, and should see orders.
-            startPickerClient();      
-            startOrderTracker();      
-            initializeOrderMap();     
+            case WAREHOUSE:
+                startWarehouseClient();
+                startOrderTracker();
+                initializeOrderMap();
+                break;
 
-            // no customer window
-            break;
+            case MANAGER:
+                startManagerClient();
+                startPickerClient();
+                startOrderTracker();
+                initializeOrderMap();
+                break;
 
-        case "TRACKER":
-            // Tracker observes OrderHub order changes
-            startOrderTracker();      
-            startPickerClient();      
-            initializeOrderMap();     
+            default:
+                startPickerClient();
+                startOrderTracker();
+                initializeOrderMap();
+                startCustomerClient();
+                break;
+        }
 
-            // no customer window
-            break;
-        case "WAREHOUSE":
-            // Tracker observes OrderHub order changes
-            startWarehouseClient();    
-            startOrderTracker();      
-            initializeOrderMap();     
-
-            // no customer window
-            break;  
-        case "MANAGER":
-            startManagerClient();
-            startPickerClient();
-            startOrderTracker();
-            initializeOrderMap();
-
-            break;      
-
-        default:
-            // safe fallback
-            startPickerClient();
-            startOrderTracker();
-            initializeOrderMap();
-            startCustomerClient();
-            break;
-    }
 }
 
 

@@ -18,6 +18,9 @@ import java.io.IOException;
 
 import ci553.happyshop.client.AccountManager;
 import ci553.happyshop.utility.UIStyle;
+import ci553.happyshop.client.UserRole;
+import ci553.happyshop.client.LoginState;
+
 
 
 /**
@@ -76,10 +79,13 @@ public class LoginView {
             if (mgr.authenticate(user, pass)) {
                 ci553.happyshop.utility.SoundManager.success();
                 mgr.setCurrentUser(user);
+                mgr.setLoginState(LoginState.AUTHENTICATED);
+
                 if (onSuccess != null) onSuccess.run();
                 stage.close();
             } else {
                 ci553.happyshop.utility.SoundManager.error();
+                mgr.setLoginState(LoginState.INVALID);
                 Alert a = new Alert(Alert.AlertType.ERROR);
                 a.setTitle("Login Failed");
                 a.setHeaderText(null);
@@ -90,8 +96,12 @@ public class LoginView {
         btnCreate.setOnAction(e -> showCreateAccountDialog(stage));
 
         btnSkip.setOnAction(e -> {
-            ci553.happyshop.utility.SoundManager.click();    
-            AccountManager.getInstance().clearCurrentUser();
+            ci553.happyshop.utility.SoundManager.click();
+
+            AccountManager mgr = AccountManager.getInstance();
+            mgr.clearCurrentUser();
+            mgr.setLoginState(LoginState.SKIPPED);
+
             stage.close();
 
             try {
@@ -100,9 +110,8 @@ public class LoginView {
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
-        });
+        });}
 
-    }
 
     /**
      * Optional callback executed when user chooses to skip login or when login succeeds.
@@ -134,9 +143,10 @@ public class LoginView {
         hb.setAlignment(Pos.CENTER_RIGHT);
 
         Label lr = new Label("Role:");
-        ComboBox<String> cbRole = new ComboBox<>();
-        cbRole.getItems().addAll("CUSTOMER", "PICKER", "TRACKER","WAREHOUSE","MANAGER");
-        cbRole.setValue("CUSTOMER");
+        ComboBox<UserRole> cbRole = new ComboBox<>();
+        cbRole.getItems().addAll(UserRole.CUSTOMER, UserRole.PICKER, UserRole.TRACKER, UserRole.WAREHOUSE, UserRole.MANAGER);
+        cbRole.setValue(UserRole.CUSTOMER);
+
 
         g.add(lu, 0, 1);
         g.add(tfu, 1, 1);
@@ -180,8 +190,9 @@ public class LoginView {
 
             try {
                 // Use the previewed id when creating the account
-                String role = cbRole.getValue();
+                UserRole role = cbRole.getValue();
                 String generatedId = mgr.createAccount(previewId, name, pin, role);
+
 
 
                 // Show confirmation including the generated user ID

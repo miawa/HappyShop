@@ -67,7 +67,10 @@ public class ManagerView {
         stage.setScene(scene);
         stage.show();
 
-        if (controller != null) controller.refresh();
+        if (controller != null) {
+            controller.refresh();
+            controller.startAutoRefresh();
+        }
     }
 
     private void setupTable() {
@@ -81,7 +84,7 @@ public class ManagerView {
         colName.setCellValueFactory(d -> new ReadOnlyStringWrapper(d.getValue().getName()));
 
         TableColumn<StaffUserRow, String> colRole = new TableColumn<>("Role");
-        colRole.setCellValueFactory(d -> new ReadOnlyStringWrapper(d.getValue().getRole()));
+        colRole.setCellValueFactory(d -> new ReadOnlyStringWrapper(d.getValue().getRole().name()));
 
         table.getColumns().setAll(colId, colName, colRole);
     }
@@ -114,7 +117,7 @@ public class ManagerView {
 
         ComboBox<String> cbRole = new ComboBox<>();
         cbRole.getItems().addAll("PICKER", "TRACKER", "WAREHOUSE", "MANAGER");
-        cbRole.setValue(row.getRole().isBlank() ? "PICKER" : row.getRole().toUpperCase());
+        cbRole.setValue(row.getRole().name());
 
         Button btnSave = new Button("Save");
         Button btnCancel = new Button("Cancel");

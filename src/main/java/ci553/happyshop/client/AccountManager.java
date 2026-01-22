@@ -36,17 +36,28 @@ public class AccountManager {
     private static final int DERIVED_KEY_BITS = 256;
 
     private volatile String currentUserId;
+    private volatile LoginState loginState = LoginState.LOGGED_OUT;
 
     public void setCurrentUser(String userId) {
-        this.currentUserId = userId;
-    }
+    this.currentUserId = userId;
+    this.loginState = (userId == null) ? LoginState.LOGGED_OUT : LoginState.AUTHENTICATED;
+}
 
     public String getCurrentUserId() {
         return currentUserId;
     }
 
+    public LoginState getLoginState() {
+        return loginState;
+    }
+
+    public void setLoginState(LoginState state) {
+        this.loginState = (state == null) ? LoginState.LOGGED_OUT : state;
+    }
+
     public void clearCurrentUser() {
         this.currentUserId = null;
+        this.loginState = LoginState.LOGGED_OUT;
     }
 
 
@@ -71,11 +82,11 @@ public class AccountManager {
 
     private static class UserRecord {
         final String name;
-        final String role; 
+        final UserRole role;
         final String saltBase64;
         final String pinHashBase64;
 
-        UserRecord(String name, String role, String saltBase64, String pinHashBase64) {
+        UserRecord(String name, UserRole role, String saltBase64, String pinHashBase64) {
             this.name = name;
             this.role = role; 
             this.saltBase64 = saltBase64;
@@ -96,7 +107,8 @@ public class AccountManager {
 
         String saltB64 = generateSaltBase64();
         String hashB64 = hashPinBase64(pin, saltB64);
-        accounts.put(id, new UserRecord(name, "CUSTOMER", saltB64, hashB64));
+        accounts.put(id, new UserRecord(name, UserRole.CUSTOMER, saltB64, hashB64));
+
         
         try {
             System.out.println("Saving users to: " + USERS_FILE);
@@ -108,23 +120,24 @@ public class AccountManager {
     }
 
    
-    public synchronized String createAccount(String id, String name, String pin, String role) {
+    public synchronized String createAccount(String id, String name, String pin, UserRole role) {
         if (!isValidPin(pin)) {
             throw new IllegalArgumentException("PIN must be exactly 4 numeric digits");
         }
         if (id == null || !id.matches("\\d{4}")) {
             throw new IllegalArgumentException("User ID must be a 4-digit string");
         }
-        if (role == null || role.isBlank()) {
-            role = "CUSTOMER";
+        if (role == null) {
+            role = UserRole.CUSTOMER;
         }
         if (accounts.containsKey(id)) {
             throw new IllegalStateException("User ID already taken");
         }
+
         String saltB64 = generateSaltBase64();
         String hashB64 = hashPinBase64(pin, saltB64);
-        accounts.put(id, new UserRecord(name, role,saltB64, hashB64));
 
+        accounts.put(id, new UserRecord(name, role, saltB64, hashB64));
 
         try {
             saveToFile();
@@ -134,17 +147,19 @@ public class AccountManager {
         return id;
     }
 
+
     public static final class AccountInfo {
         public final String userId;
         public final String name;
-        public final String role;
+        public final UserRole role;
 
-        public AccountInfo(String userId, String name, String role) {
+        public AccountInfo(String userId, String name, UserRole role) {
             this.userId = userId;
             this.name = name;
             this.role = role;
         }
     }
+
 
     public synchronized boolean deleteAccount(String userId) {
         if (userId == null) return false;
@@ -159,26 +174,30 @@ public class AccountManager {
         return true;
     }
 
-    public synchronized boolean updateAccount(String userId, String newName, String newRole) {
-        if (userId == null) return false;
+    public synchronized boolean updateAccount(String userId, String newName, UserRole newRole) {
+    if (userId == null) return false;
 
-        UserRecord existing = accounts.get(userId);
-        if (existing == null) return false;
+    UserRecord existing = accounts.get(userId);
+    if (existing == null) return false;
 
-        if (newName == null) newName = "";
-        if (newRole == null || newRole.isBlank()) newRole = existing.role;
+    if (newName == null) newName = "";
+    if (newRole == null) newRole = existing.role;
 
-        accounts.put(userId, new UserRecord(
-                newName,
-                newRole,
-                existing.saltBase64,
-                existing.pinHashBase64
-        ));
+    accounts.put(userId, new UserRecord(
+            newName,
+            newRole,
+            existing.saltBase64,
+            existing.pinHashBase64
+    ));
 
-        try { saveToFile(); } catch (IOException ignored) {}
-        return true;
+    try { saveToFile(); } catch (IOException ignored) {}
+    return true;
 }
 
+
+    public synchronized boolean updateAccount(String userId, String newName, String newRole) {
+        return updateAccount(userId, newName, UserRole.fromString(newRole));
+    }
 
 
     public List<AccountInfo> getAllAccounts() {
@@ -216,7 +235,7 @@ public class AccountManager {
         return id;
     }
 
-    public String getRoleFor(String userId) {
+    public UserRole getRoleFor(String userId) {
         UserRecord r = accounts.get(userId);
         return r == null ? null : r.role;
     }
@@ -264,7 +283,7 @@ public class AccountManager {
                 String uid = e.getKey();
                 UserRecord r = e.getValue();
                 String obj = String.format("{\"userId\":\"%s\",\"name\":\"%s\",\"role\":\"%s\",\"salt\":\"%s\",\"pinHash\":\"%s\"}",
-                        escape(uid), escape(r.name), escape(r.role), escape(r.saltBase64), escape(r.pinHashBase64));
+                        escape(uid), escape(r.name), escape(r.role.name()), escape(r.saltBase64), escape(r.pinHashBase64));
                 parts.add(obj);
             }
             String json = "[" + String.join(",", parts) + "]";
@@ -302,11 +321,13 @@ public class AccountManager {
             String obj = content.substring(objStart, idx);
             String userId = extractJsonValue(obj, "userId");
             String name = extractJsonValue(obj, "name");
-            String role = extractJsonValue(obj, "role");
+           // String role = extractJsonValue(obj, "role");
             String salt = extractJsonValue(obj, "salt");
             String pinHash = extractJsonValue(obj, "pinHash");
+            String roleStr = extractJsonValue(obj, "role");
+            UserRole role = UserRole.fromString(roleStr);
             if (userId != null && salt != null && pinHash != null) {
-                accounts.put(userId, new UserRecord(name == null ? "" : name, role == null ? "" : role, salt, pinHash));
+                accounts.put(userId, new UserRecord(name == null ? "" : name, role, salt, pinHash));
             }
         }
     }
